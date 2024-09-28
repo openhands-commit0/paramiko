@@ -1,35 +1,9 @@
-# Copyright (C) 2003-2007  Robey Pointer <robeypointer@gmail.com>
-#
-# This file is part of paramiko.
-#
-# Paramiko is free software; you can redistribute it and/or modify it under the
-# terms of the GNU Lesser General Public License as published by the Free
-# Software Foundation; either version 2.1 of the License, or (at your option)
-# any later version.
-#
-# Paramiko is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-# A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
-# details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Paramiko; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
-
 """
 `.ServerInterface` is an interface to override for server support.
 """
-
 import threading
 from paramiko import util
-from paramiko.common import (
-    DEBUG,
-    ERROR,
-    OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,
-    AUTH_FAILED,
-    AUTH_SUCCESSFUL,
-)
-
+from paramiko.common import DEBUG, ERROR, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED, AUTH_FAILED, AUTH_SUCCESSFUL
 
 class ServerInterface:
     """
@@ -84,7 +58,7 @@ class ServerInterface:
         :param int chanid: ID of the channel
         :return: an `int` success or failure code (listed above)
         """
-        return OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
+        pass
 
     def get_allowed_auths(self, username):
         """
@@ -101,7 +75,7 @@ class ServerInterface:
         :param str username: the username requesting authentication.
         :return: a comma-separated `str` of authentication types
         """
-        return "password"
+        pass
 
     def check_auth_none(self, username):
         """
@@ -120,7 +94,7 @@ class ServerInterface:
             it succeeds.
         :rtype: int
         """
-        return AUTH_FAILED
+        pass
 
     def check_auth_password(self, username, password):
         """
@@ -145,7 +119,7 @@ class ServerInterface:
             successful, but authentication must continue.
         :rtype: int
         """
-        return AUTH_FAILED
+        pass
 
     def check_auth_publickey(self, username, key):
         """
@@ -177,7 +151,7 @@ class ServerInterface:
             authentication
         :rtype: int
         """
-        return AUTH_FAILED
+        pass
 
     def check_auth_interactive(self, username, submethods):
         """
@@ -202,7 +176,7 @@ class ServerInterface:
             object containing queries for the user
         :rtype: int or `.InteractiveQuery`
         """
-        return AUTH_FAILED
+        pass
 
     def check_auth_interactive_response(self, responses):
         """
@@ -233,11 +207,9 @@ class ServerInterface:
             object containing queries for the user
         :rtype: int or `.InteractiveQuery`
         """
-        return AUTH_FAILED
+        pass
 
-    def check_auth_gssapi_with_mic(
-        self, username, gss_authenticated=AUTH_FAILED, cc_file=None
-    ):
+    def check_auth_gssapi_with_mic(self, username, gss_authenticated=AUTH_FAILED, cc_file=None):
         """
         Authenticate the given user to the server if he is a valid krb5
         principal.
@@ -261,13 +233,9 @@ class ServerInterface:
                  log in as a user.
         :see: http://www.unix.com/man-page/all/3/krb5_kuserok/
         """
-        if gss_authenticated == AUTH_SUCCESSFUL:
-            return AUTH_SUCCESSFUL
-        return AUTH_FAILED
+        pass
 
-    def check_auth_gssapi_keyex(
-        self, username, gss_authenticated=AUTH_FAILED, cc_file=None
-    ):
+    def check_auth_gssapi_keyex(self, username, gss_authenticated=AUTH_FAILED, cc_file=None):
         """
         Authenticate the given user to the server if he is a valid krb5
         principal and GSS-API Key Exchange was performed.
@@ -293,9 +261,7 @@ class ServerInterface:
                  to log in as a user.
         :see: http://www.unix.com/man-page/all/3/krb5_kuserok/
         """
-        if gss_authenticated == AUTH_SUCCESSFUL:
-            return AUTH_SUCCESSFUL
-        return AUTH_FAILED
+        pass
 
     def enable_auth_gssapi(self):
         """
@@ -306,8 +272,7 @@ class ServerInterface:
         :returns bool: Whether GSSAPI authentication is enabled.
         :see: `.ssh_gss`
         """
-        UseGSSAPI = False
-        return UseGSSAPI
+        pass
 
     def check_port_forward_request(self, address, port):
         """
@@ -328,7 +293,7 @@ class ServerInterface:
             the port number (`int`) that was opened for listening, or ``False``
             to reject
         """
-        return False
+        pass
 
     def cancel_port_forward_request(self, address, port):
         """
@@ -369,13 +334,9 @@ class ServerInterface:
             ``True`` or a `tuple` of data if the request was granted; ``False``
             otherwise.
         """
-        return False
+        pass
 
-    # ...Channel requests...
-
-    def check_channel_pty_request(
-        self, channel, term, width, height, pixelwidth, pixelheight, modes
-    ):
+    def check_channel_pty_request(self, channel, term, width, height, pixelwidth, pixelheight, modes):
         """
         Determine if a pseudo-terminal of the given dimensions (usually
         requested for shell access) can be provided on the given channel.
@@ -394,7 +355,7 @@ class ServerInterface:
             ``True`` if the pseudo-terminal has been allocated; ``False``
             otherwise.
         """
-        return False
+        pass
 
     def check_channel_shell_request(self, channel):
         """
@@ -410,7 +371,7 @@ class ServerInterface:
             ``True`` if this channel is now hooked up to a shell; ``False`` if
             a shell can't or won't be provided.
         """
-        return False
+        pass
 
     def check_channel_exec_request(self, channel, command):
         """
@@ -429,7 +390,7 @@ class ServerInterface:
 
         .. versionadded:: 1.1
         """
-        return False
+        pass
 
     def check_channel_subsystem_request(self, channel, name):
         """
@@ -453,17 +414,9 @@ class ServerInterface:
             ``True`` if this channel is now hooked up to the requested
             subsystem; ``False`` if that subsystem can't or won't be provided.
         """
-        transport = channel.get_transport()
-        handler_class, args, kwargs = transport._get_subsystem_handler(name)
-        if handler_class is None:
-            return False
-        handler = handler_class(channel, name, self, *args, **kwargs)
-        handler.start()
-        return True
+        pass
 
-    def check_channel_window_change_request(
-        self, channel, width, height, pixelwidth, pixelheight
-    ):
+    def check_channel_window_change_request(self, channel, width, height, pixelwidth, pixelheight):
         """
         Determine if the pseudo-terminal on the given channel can be resized.
         This only makes sense if a pty was previously allocated on it.
@@ -479,16 +432,9 @@ class ServerInterface:
             height of screen in pixels, if known (may be ``0`` if unknown).
         :return: ``True`` if the terminal was resized; ``False`` if not.
         """
-        return False
+        pass
 
-    def check_channel_x11_request(
-        self,
-        channel,
-        single_connection,
-        auth_protocol,
-        auth_cookie,
-        screen_number,
-    ):
+    def check_channel_x11_request(self, channel, single_connection, auth_protocol, auth_cookie, screen_number):
         """
         Determine if the client will be provided with an X11 session.  If this
         method returns ``True``, X11 applications should be routed through new
@@ -505,7 +451,7 @@ class ServerInterface:
         :param int screen_number: the number of the X11 screen to connect to
         :return: ``True`` if the X11 session was opened; ``False`` if not
         """
-        return False
+        pass
 
     def check_channel_forward_agent_request(self, channel):
         """
@@ -521,7 +467,7 @@ class ServerInterface:
         If ``True`` is returned, the server should create an
         :class:`AgentServerProxy` to access the agent.
         """
-        return False
+        pass
 
     def check_channel_direct_tcpip_request(self, chanid, origin, destination):
         """
@@ -561,7 +507,7 @@ class ServerInterface:
             (server side)
         :return: an `int` success or failure code (listed above)
         """
-        return OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
+        pass
 
     def check_channel_env_request(self, channel, name, value):
         """
@@ -579,7 +525,7 @@ class ServerInterface:
         :param str value: Channel value
         :returns: A boolean
         """
-        return False
+        pass
 
     def get_banner(self):
         """
@@ -593,15 +539,14 @@ class ServerInterface:
 
         .. versionadded:: 2.3
         """
-        return (None, None)
-
+        pass
 
 class InteractiveQuery:
     """
     A query (set of prompts) for a user during interactive authentication.
     """
 
-    def __init__(self, name="", instructions="", *prompts):
+    def __init__(self, name='', instructions='', *prompts):
         """
         Create a new interactive query to send to the client.  The name and
         instructions are optional, but are generally displayed to the end
@@ -632,8 +577,7 @@ class InteractiveQuery:
             ``True`` (default) if the user's response should be echoed;
             ``False`` if not (for a password or similar)
         """
-        self.prompts.append((prompt, echo))
-
+        pass
 
 class SubsystemHandler(threading.Thread):
     """
@@ -675,26 +619,7 @@ class SubsystemHandler(threading.Thread):
         Return the `.ServerInterface` object associated with this channel and
         subsystem.
         """
-        return self.__server
-
-    def _run(self):
-        try:
-            self.__transport._log(
-                DEBUG, "Starting handler for subsystem {}".format(self.__name)
-            )
-            self.start_subsystem(self.__name, self.__transport, self.__channel)
-        except Exception as e:
-            self.__transport._log(
-                ERROR,
-                'Exception in subsystem handler for "{}": {}'.format(
-                    self.__name, e
-                ),
-            )
-            self.__transport._log(ERROR, util.tb_strings())
-        try:
-            self.finish_subsystem()
-        except:
-            pass
+        pass
 
     def start_subsystem(self, name, transport, channel):
         """
@@ -729,4 +654,4 @@ class SubsystemHandler(threading.Thread):
 
         .. versionadded:: 1.1
         """
-        self.__channel.close()
+        pass

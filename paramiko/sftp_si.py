@@ -1,29 +1,9 @@
-# Copyright (C) 2003-2007  Robey Pointer <robeypointer@gmail.com>
-#
-# This file is part of paramiko.
-#
-# Paramiko is free software; you can redistribute it and/or modify it under the
-# terms of the GNU Lesser General Public License as published by the Free
-# Software Foundation; either version 2.1 of the License, or (at your option)
-# any later version.
-#
-# Paramiko is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-# A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
-# details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Paramiko; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
-
 """
 An interface to override for SFTP server support.
 """
-
 import os
 import sys
 from paramiko.sftp import SFTP_OP_UNSUPPORTED
-
 
 class SFTPServerInterface:
     """
@@ -105,7 +85,7 @@ class SFTPServerInterface:
             requested attributes of the file if it is newly created.
         :return: a new `.SFTPHandle` or error code.
         """
-        return SFTP_OP_UNSUPPORTED
+        pass
 
     def list_folder(self, path):
         """
@@ -137,7 +117,7 @@ class SFTPServerInterface:
             direct translation from the SFTP server path to your local
             filesystem.
         """
-        return SFTP_OP_UNSUPPORTED
+        pass
 
     def stat(self, path):
         """
@@ -153,7 +133,7 @@ class SFTPServerInterface:
             an `.SFTPAttributes` object for the given file, or an SFTP error
             code (like ``SFTP_PERMISSION_DENIED``).
         """
-        return SFTP_OP_UNSUPPORTED
+        pass
 
     def lstat(self, path):
         """
@@ -171,7 +151,7 @@ class SFTPServerInterface:
             an `.SFTPAttributes` object for the given file, or an SFTP error
             code (like ``SFTP_PERMISSION_DENIED``).
         """
-        return SFTP_OP_UNSUPPORTED
+        pass
 
     def remove(self, path):
         """
@@ -181,7 +161,7 @@ class SFTPServerInterface:
             the requested path (relative or absolute) of the file to delete.
         :return: an SFTP error code `int` like ``SFTP_OK``.
         """
-        return SFTP_OP_UNSUPPORTED
+        pass
 
     def rename(self, oldpath, newpath):
         """
@@ -205,7 +185,7 @@ class SFTPServerInterface:
         :param str newpath: the requested new path of the file.
         :return: an SFTP error code `int` like ``SFTP_OK``.
         """
-        return SFTP_OP_UNSUPPORTED
+        pass
 
     def posix_rename(self, oldpath, newpath):
         """
@@ -219,7 +199,7 @@ class SFTPServerInterface:
 
         :versionadded: 2.2
         """
-        return SFTP_OP_UNSUPPORTED
+        pass
 
     def mkdir(self, path, attr):
         """
@@ -236,7 +216,7 @@ class SFTPServerInterface:
         :param .SFTPAttributes attr: requested attributes of the new folder.
         :return: an SFTP error code `int` like ``SFTP_OK``.
         """
-        return SFTP_OP_UNSUPPORTED
+        pass
 
     def rmdir(self, path):
         """
@@ -248,7 +228,7 @@ class SFTPServerInterface:
             requested path (relative or absolute) of the folder to remove.
         :return: an SFTP error code `int` like ``SFTP_OK``.
         """
-        return SFTP_OP_UNSUPPORTED
+        pass
 
     def chattr(self, path, attr):
         """
@@ -263,7 +243,7 @@ class SFTPServerInterface:
             object)
         :return: an error code `int` like ``SFTP_OK``.
         """
-        return SFTP_OP_UNSUPPORTED
+        pass
 
     def canonicalize(self, path):
         """
@@ -279,14 +259,7 @@ class SFTPServerInterface:
 
         The default implementation returns ``os.path.normpath('/' + path)``.
         """
-        if os.path.isabs(path):
-            out = os.path.normpath(path)
-        else:
-            out = os.path.normpath("/" + path)
-        if sys.platform == "win32":
-            # on windows, normalize backslashes to sftp/posix format
-            out = out.replace("\\", "/")
-        return out
+        pass
 
     def readlink(self, path):
         """
@@ -299,7 +272,7 @@ class SFTPServerInterface:
             the target `str` path of the symbolic link, or an error code like
             ``SFTP_NO_SUCH_FILE``.
         """
-        return SFTP_OP_UNSUPPORTED
+        pass
 
     def symlink(self, target_path, path):
         """
@@ -313,4 +286,4 @@ class SFTPServerInterface:
             path (relative or absolute) of the symbolic link to create.
         :return: an error code `int` like ``SFTP_OK``.
         """
-        return SFTP_OP_UNSUPPORTED
+        pass

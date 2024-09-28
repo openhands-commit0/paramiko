@@ -1,31 +1,10 @@
-# Copyright (C) 2003-2007  Robey Pointer <robeypointer@gmail.com>
-#
-# This file is part of paramiko.
-#
-# Paramiko is free software; you can redistribute it and/or modify it under the
-# terms of the GNU Lesser General Public License as published by the Free
-# Software Foundation; either version 2.1 of the License, or (at your option)
-# any later version.
-#
-# Paramiko is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-# A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
-# details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Paramiko; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
-
 import socket
-
 
 class SSHException(Exception):
     """
     Exception raised by failures in SSH2 protocol negotiation or logic errors.
     """
-
     pass
-
 
 class AuthenticationException(SSHException):
     """
@@ -35,17 +14,13 @@ class AuthenticationException(SSHException):
 
     .. versionadded:: 1.6
     """
-
     pass
-
 
 class PasswordRequiredException(AuthenticationException):
     """
     Exception raised when a password is needed to unlock a private key file.
     """
-
     pass
-
 
 class BadAuthenticationType(AuthenticationException):
     """
@@ -55,28 +30,20 @@ class BadAuthenticationType(AuthenticationException):
 
     .. versionadded:: 1.1
     """
-
     allowed_types = []
 
-    # TODO 4.0: remove explanation kwarg
     def __init__(self, explanation, types):
-        # TODO 4.0: remove this supercall unless it's actually required for
-        # pickling (after fixing pickling)
         AuthenticationException.__init__(self, explanation, types)
         self.explanation = explanation
         self.allowed_types = types
 
     def __str__(self):
-        return "{}; allowed types: {!r}".format(
-            self.explanation, self.allowed_types
-        )
-
+        return '{}; allowed types: {!r}'.format(self.explanation, self.allowed_types)
 
 class PartialAuthentication(AuthenticationException):
     """
     An internal exception thrown in the case of partial authentication.
     """
-
     allowed_types = []
 
     def __init__(self, types):
@@ -84,15 +51,10 @@ class PartialAuthentication(AuthenticationException):
         self.allowed_types = types
 
     def __str__(self):
-        return "Partial authentication; allowed types: {!r}".format(
-            self.allowed_types
-        )
+        return 'Partial authentication; allowed types: {!r}'.format(self.allowed_types)
 
-
-# TODO 4.0: stop inheriting from SSHException, move to auth.py
 class UnableToAuthenticate(AuthenticationException):
     pass
-
 
 class ChannelException(SSHException):
     """
@@ -109,8 +71,7 @@ class ChannelException(SSHException):
         self.text = text
 
     def __str__(self):
-        return "ChannelException({!r}, {!r})".format(self.code, self.text)
-
+        return 'ChannelException({!r}, {!r})'.format(self.code, self.text)
 
 class BadHostKeyException(SSHException):
     """
@@ -130,13 +91,8 @@ class BadHostKeyException(SSHException):
         self.expected_key = expected_key
 
     def __str__(self):
-        msg = "Host key for server '{}' does not match: got '{}', expected '{}'"  # noqa
-        return msg.format(
-            self.hostname,
-            self.key.get_base64(),
-            self.expected_key.get_base64(),
-        )
-
+        msg = "Host key for server '{}' does not match: got '{}', expected '{}'"
+        return msg.format(self.hostname, self.key.get_base64(), self.expected_key.get_base64())
 
 class IncompatiblePeer(SSHException):
     """
@@ -144,14 +100,7 @@ class IncompatiblePeer(SSHException):
 
     .. versionadded:: 2.9
     """
-
-    # TODO 4.0: consider making this annotate w/ 1..N 'missing' algorithms,
-    # either just the first one that would halt kex, or even updating the
-    # Transport logic so we record /all/ that /could/ halt kex.
-    # TODO: update docstrings where this may end up raised so they are more
-    # specific.
     pass
-
 
 class ProxyCommandFailure(SSHException):
     """
@@ -167,10 +116,7 @@ class ProxyCommandFailure(SSHException):
         self.error = error
 
     def __str__(self):
-        return 'ProxyCommand("{}") returned nonzero exit status: {}'.format(
-            self.command, self.error
-        )
-
+        return 'ProxyCommand("{}") returned nonzero exit status: {}'.format(self.command, self.error)
 
 class NoValidConnectionsError(socket.error):
     """
@@ -201,20 +147,17 @@ class NoValidConnectionsError(socket.error):
             The errors dict to store, as described by class docstring.
         """
         addrs = sorted(errors.keys())
-        body = ", ".join([x[0] for x in addrs[:-1]])
+        body = ', '.join([x[0] for x in addrs[:-1]])
         tail = addrs[-1][0]
         if body:
-            msg = "Unable to connect to port {0} on {1} or {2}"
+            msg = 'Unable to connect to port {0} on {1} or {2}'
         else:
-            msg = "Unable to connect to port {0} on {2}"
-        super().__init__(
-            None, msg.format(addrs[0][1], body, tail)  # stand-in for errno
-        )
+            msg = 'Unable to connect to port {0} on {2}'
+        super().__init__(None, msg.format(addrs[0][1], body, tail))
         self.errors = errors
 
     def __reduce__(self):
         return (self.__class__, (self.errors,))
-
 
 class CouldNotCanonicalize(SSHException):
     """
@@ -222,9 +165,7 @@ class CouldNotCanonicalize(SSHException):
 
     .. versionadded:: 2.7
     """
-
     pass
-
 
 class ConfigParseError(SSHException):
     """
@@ -236,9 +177,7 @@ class ConfigParseError(SSHException):
 
     .. versionadded:: 2.7
     """
-
     pass
-
 
 class MessageOrderError(SSHException):
     """
@@ -246,5 +185,4 @@ class MessageOrderError(SSHException):
 
     .. versionadded:: 3.4
     """
-
     pass

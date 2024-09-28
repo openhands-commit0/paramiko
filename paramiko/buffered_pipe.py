@@ -1,40 +1,18 @@
-# Copyright (C) 2006-2007  Robey Pointer <robeypointer@gmail.com>
-#
-# This file is part of paramiko.
-#
-# Paramiko is free software; you can redistribute it and/or modify it under the
-# terms of the GNU Lesser General Public License as published by the Free
-# Software Foundation; either version 2.1 of the License, or (at your option)
-# any later version.
-#
-# Paramiko is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-# A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
-# details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Paramiko; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
-
 """
 Attempt to generalize the "feeder" part of a `.Channel`: an object which can be
 read from and closed, but is reading from a buffer fed by another thread.  The
 read operations are blocking and can have a timeout set.
 """
-
 import array
 import threading
 import time
 from paramiko.util import b
 
-
 class PipeTimeout(IOError):
     """
     Indicates that a timeout was reached on a read from a `.BufferedPipe`.
     """
-
     pass
-
 
 class BufferedPipe:
     """
@@ -47,14 +25,8 @@ class BufferedPipe:
         self._lock = threading.Lock()
         self._cv = threading.Condition(self._lock)
         self._event = None
-        self._buffer = array.array("B")
+        self._buffer = array.array('B')
         self._closed = False
-
-    def _buffer_frombytes(self, data):
-        self._buffer.frombytes(data)
-
-    def _buffer_tobytes(self, limit=None):
-        return self._buffer[:limit].tobytes()
 
     def set_event(self, event):
         """
@@ -64,20 +36,7 @@ class BufferedPipe:
 
         :param threading.Event event: the event to set/clear
         """
-        self._lock.acquire()
-        try:
-            self._event = event
-            # Make sure the event starts in `set` state if we appear to already
-            # be closed; otherwise, if we start in `clear` state & are closed,
-            # nothing will ever call `.feed` and the event (& OS pipe, if we're
-            # wrapping one - see `Channel.fileno`) will permanently stay in
-            # `clear`, causing deadlock if e.g. `select`ed upon.
-            if self._closed or len(self._buffer) > 0:
-                event.set()
-            else:
-                event.clear()
-        finally:
-            self._lock.release()
+        pass
 
     def feed(self, data):
         """
@@ -86,14 +45,7 @@ class BufferedPipe:
 
         :param data: the data to add, as a ``str`` or ``bytes``
         """
-        self._lock.acquire()
-        try:
-            if self._event is not None:
-                self._event.set()
-            self._buffer_frombytes(b(data))
-            self._cv.notify_all()
-        finally:
-            self._lock.release()
+        pass
 
     def read_ready(self):
         """
@@ -105,13 +57,7 @@ class BufferedPipe:
             ``True`` if a `read` call would immediately return at least one
             byte; ``False`` otherwise.
         """
-        self._lock.acquire()
-        try:
-            if len(self._buffer) == 0:
-                return False
-            return True
-        finally:
-            self._lock.release()
+        pass
 
     def read(self, nbytes, timeout=None):
         """
@@ -134,38 +80,7 @@ class BufferedPipe:
             `.PipeTimeout` -- if a timeout was specified and no data was ready
             before that timeout
         """
-        out = bytes()
-        self._lock.acquire()
-        try:
-            if len(self._buffer) == 0:
-                if self._closed:
-                    return out
-                # should we block?
-                if timeout == 0.0:
-                    raise PipeTimeout()
-                # loop here in case we get woken up but a different thread has
-                # grabbed everything in the buffer.
-                while (len(self._buffer) == 0) and not self._closed:
-                    then = time.time()
-                    self._cv.wait(timeout)
-                    if timeout is not None:
-                        timeout -= time.time() - then
-                        if timeout <= 0.0:
-                            raise PipeTimeout()
-
-            # something's in the buffer and we have the lock!
-            if len(self._buffer) <= nbytes:
-                out = self._buffer_tobytes()
-                del self._buffer[:]
-                if (self._event is not None) and not self._closed:
-                    self._event.clear()
-            else:
-                out = self._buffer_tobytes(nbytes)
-                del self._buffer[:nbytes]
-        finally:
-            self._lock.release()
-
-        return out
+        pass
 
     def empty(self):
         """
@@ -175,29 +90,14 @@ class BufferedPipe:
             any data that was in the buffer prior to clearing it out, as a
             `str`
         """
-        self._lock.acquire()
-        try:
-            out = self._buffer_tobytes()
-            del self._buffer[:]
-            if (self._event is not None) and not self._closed:
-                self._event.clear()
-            return out
-        finally:
-            self._lock.release()
+        pass
 
     def close(self):
         """
         Close this pipe object.  Future calls to `read` after the buffer
         has been emptied will return immediately with an empty string.
         """
-        self._lock.acquire()
-        try:
-            self._closed = True
-            self._cv.notify_all()
-            if self._event is not None:
-                self._event.set()
-        finally:
-            self._lock.release()
+        pass
 
     def __len__(self):
         """

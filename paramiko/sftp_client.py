@@ -1,22 +1,3 @@
-# Copyright (C) 2003-2007  Robey Pointer <robeypointer@gmail.com>
-#
-# This file is part of Paramiko.
-#
-# Paramiko is free software; you can redistribute it and/or modify it under the
-# terms of the GNU Lesser General Public License as published by the Free
-# Software Foundation; either version 2.1 of the License, or (at your option)
-# any later version.
-#
-# Paramiko is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-# A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
-# details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Paramiko; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
-
-
 from binascii import hexlify
 import errno
 import os
@@ -28,46 +9,11 @@ from paramiko import util
 from paramiko.channel import Channel
 from paramiko.message import Message
 from paramiko.common import INFO, DEBUG, o777
-from paramiko.sftp import (
-    BaseSFTP,
-    CMD_OPENDIR,
-    CMD_HANDLE,
-    SFTPError,
-    CMD_READDIR,
-    CMD_NAME,
-    CMD_CLOSE,
-    SFTP_FLAG_READ,
-    SFTP_FLAG_WRITE,
-    SFTP_FLAG_CREATE,
-    SFTP_FLAG_TRUNC,
-    SFTP_FLAG_APPEND,
-    SFTP_FLAG_EXCL,
-    CMD_OPEN,
-    CMD_REMOVE,
-    CMD_RENAME,
-    CMD_MKDIR,
-    CMD_RMDIR,
-    CMD_STAT,
-    CMD_ATTRS,
-    CMD_LSTAT,
-    CMD_SYMLINK,
-    CMD_SETSTAT,
-    CMD_READLINK,
-    CMD_REALPATH,
-    CMD_STATUS,
-    CMD_EXTENDED,
-    SFTP_OK,
-    SFTP_EOF,
-    SFTP_NO_SUCH_FILE,
-    SFTP_PERMISSION_DENIED,
-    int64,
-)
-
+from paramiko.sftp import BaseSFTP, CMD_OPENDIR, CMD_HANDLE, SFTPError, CMD_READDIR, CMD_NAME, CMD_CLOSE, SFTP_FLAG_READ, SFTP_FLAG_WRITE, SFTP_FLAG_CREATE, SFTP_FLAG_TRUNC, SFTP_FLAG_APPEND, SFTP_FLAG_EXCL, CMD_OPEN, CMD_REMOVE, CMD_RENAME, CMD_MKDIR, CMD_RMDIR, CMD_STAT, CMD_ATTRS, CMD_LSTAT, CMD_SYMLINK, CMD_SETSTAT, CMD_READLINK, CMD_REALPATH, CMD_STATUS, CMD_EXTENDED, SFTP_OK, SFTP_EOF, SFTP_NO_SUCH_FILE, SFTP_PERMISSION_DENIED, int64
 from paramiko.sftp_attr import SFTPAttributes
 from paramiko.ssh_exception import SSHException
 from paramiko.sftp_file import SFTPFile
 from paramiko.util import ClosingContextManager, b, u
-
 
 def _to_unicode(s):
     """
@@ -75,17 +21,8 @@ def _to_unicode(s):
     protocol).  if neither works, just return a byte string because the server
     probably doesn't know the filename's encoding.
     """
-    try:
-        return s.encode("ascii")
-    except (UnicodeError, AttributeError):
-        try:
-            return s.decode("utf-8")
-        except UnicodeError:
-            return s
-
-
-b_slash = b"/"
-
+    pass
+b_slash = b'/'
 
 class SFTPClient(BaseSFTP, ClosingContextManager):
     """
@@ -114,28 +51,18 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
         self.sock = sock
         self.ultra_debug = False
         self.request_number = 1
-        # lock for request_number
         self._lock = threading.Lock()
         self._cwd = None
-        # request # -> SFTPFile
         self._expecting = weakref.WeakValueDictionary()
         if type(sock) is Channel:
-            # override default logger
             transport = self.sock.get_transport()
-            self.logger = util.get_logger(
-                transport.get_log_channel() + ".sftp"
-            )
+            self.logger = util.get_logger(transport.get_log_channel() + '.sftp')
             self.ultra_debug = transport.get_hexdump()
         try:
             server_version = self._send_version()
         except EOFError:
-            raise SSHException("EOF during negotiation")
-        self._log(
-            INFO,
-            "Opened sftp connection (server version {})".format(
-                server_version
-            ),
-        )
+            raise SSHException('EOF during negotiation')
+        self._log(INFO, 'Opened sftp connection (server version {})'.format(server_version))
 
     @classmethod
     def from_transport(cls, t, window_size=None, max_packet_size=None):
@@ -161,29 +88,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
         .. versionchanged:: 1.15
             Added the ``window_size`` and ``max_packet_size`` arguments.
         """
-        chan = t.open_session(
-            window_size=window_size, max_packet_size=max_packet_size
-        )
-        if chan is None:
-            return None
-        chan.invoke_subsystem("sftp")
-        return cls(chan)
-
-    def _log(self, level, msg, *args):
-        if isinstance(msg, list):
-            for m in msg:
-                self._log(level, m, *args)
-        else:
-            # NOTE: these bits MUST continue using %-style format junk because
-            # logging.Logger.log() explicitly requires it. Grump.
-            # escape '%' in msg (they could come from file or directory names)
-            # before logging
-            msg = msg.replace("%", "%%")
-            super()._log(
-                level,
-                "[chan %s] " + msg,
-                *([self.sock.get_name()] + list(args))
-            )
+        pass
 
     def close(self):
         """
@@ -191,8 +96,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
 
         .. versionadded:: 1.4
         """
-        self._log(INFO, "sftp session closed.")
-        self.sock.close()
+        pass
 
     def get_channel(self):
         """
@@ -201,9 +105,9 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
 
         .. versionadded:: 1.7.1
         """
-        return self.sock
+        pass
 
-    def listdir(self, path="."):
+    def listdir(self, path='.'):
         """
         Return a list containing the names of the entries in the given
         ``path``.
@@ -215,9 +119,9 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
 
         :param str path: path to list (defaults to ``'.'``)
         """
-        return [f.filename for f in self.listdir_attr(path)]
+        pass
 
-    def listdir_attr(self, path="."):
+    def listdir_attr(self, path='.'):
         """
         Return a list containing `.SFTPAttributes` objects corresponding to
         files in the given ``path``.  The list is in arbitrary order.  It does
@@ -234,32 +138,9 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
 
         .. versionadded:: 1.2
         """
-        path = self._adjust_cwd(path)
-        self._log(DEBUG, "listdir({!r})".format(path))
-        t, msg = self._request(CMD_OPENDIR, path)
-        if t != CMD_HANDLE:
-            raise SFTPError("Expected handle")
-        handle = msg.get_binary()
-        filelist = []
-        while True:
-            try:
-                t, msg = self._request(CMD_READDIR, handle)
-            except EOFError:
-                # done with handle
-                break
-            if t != CMD_NAME:
-                raise SFTPError("Expected name response")
-            count = msg.get_int()
-            for i in range(count):
-                filename = msg.get_text()
-                longname = msg.get_text()
-                attr = SFTPAttributes._from_msg(msg, filename, longname)
-                if (filename != ".") and (filename != ".."):
-                    filelist.append(attr)
-        self._request(CMD_CLOSE, handle)
-        return filelist
+        pass
 
-    def listdir_iter(self, path=".", read_aheads=50):
+    def listdir_iter(self, path='.', read_aheads=50):
         """
         Generator version of `.listdir_attr`.
 
@@ -273,57 +154,9 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
 
         .. versionadded:: 1.15
         """
-        path = self._adjust_cwd(path)
-        self._log(DEBUG, "listdir({!r})".format(path))
-        t, msg = self._request(CMD_OPENDIR, path)
+        pass
 
-        if t != CMD_HANDLE:
-            raise SFTPError("Expected handle")
-
-        handle = msg.get_string()
-
-        nums = list()
-        while True:
-            try:
-                # Send out a bunch of readdir requests so that we can read the
-                # responses later on Section 6.7 of the SSH file transfer RFC
-                # explains this
-                # http://filezilla-project.org/specs/draft-ietf-secsh-filexfer-02.txt
-                for i in range(read_aheads):
-                    num = self._async_request(type(None), CMD_READDIR, handle)
-                    nums.append(num)
-
-                # For each of our sent requests
-                # Read and parse the corresponding packets
-                # If we're at the end of our queued requests, then fire off
-                # some more requests
-                # Exit the loop when we've reached the end of the directory
-                # handle
-                for num in nums:
-                    t, pkt_data = self._read_packet()
-                    msg = Message(pkt_data)
-                    new_num = msg.get_int()
-                    if num == new_num:
-                        if t == CMD_STATUS:
-                            self._convert_status(msg)
-                    count = msg.get_int()
-                    for i in range(count):
-                        filename = msg.get_text()
-                        longname = msg.get_text()
-                        attr = SFTPAttributes._from_msg(
-                            msg, filename, longname
-                        )
-                        if (filename != ".") and (filename != ".."):
-                            yield attr
-
-                # If we've hit the end of our queued requests, reset nums.
-                nums = list()
-
-            except EOFError:
-                self._request(CMD_CLOSE, handle)
-                return
-
-    def open(self, filename, mode="r", bufsize=-1):
+    def open(self, filename, mode='r', bufsize=-1):
         """
         Open a file on the remote server.  The arguments are the same as for
         Python's built-in `python:file` (aka `python:open`).  A file-like
@@ -355,33 +188,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
 
         :raises: ``IOError`` -- if the file could not be opened.
         """
-        filename = self._adjust_cwd(filename)
-        self._log(DEBUG, "open({!r}, {!r})".format(filename, mode))
-        imode = 0
-        if ("r" in mode) or ("+" in mode):
-            imode |= SFTP_FLAG_READ
-        if ("w" in mode) or ("+" in mode) or ("a" in mode):
-            imode |= SFTP_FLAG_WRITE
-        if "w" in mode:
-            imode |= SFTP_FLAG_CREATE | SFTP_FLAG_TRUNC
-        if "a" in mode:
-            imode |= SFTP_FLAG_CREATE | SFTP_FLAG_APPEND
-        if "x" in mode:
-            imode |= SFTP_FLAG_CREATE | SFTP_FLAG_EXCL
-        attrblock = SFTPAttributes()
-        t, msg = self._request(CMD_OPEN, filename, imode, attrblock)
-        if t != CMD_HANDLE:
-            raise SFTPError("Expected handle")
-        handle = msg.get_binary()
-        self._log(
-            DEBUG,
-            "open({!r}, {!r}) -> {}".format(
-                filename, mode, u(hexlify(handle))
-            ),
-        )
-        return SFTPFile(self, handle, mode, bufsize)
-
-    # Python continues to vacillate about "open" vs "file"...
+        pass
     file = open
 
     def remove(self, path):
@@ -393,10 +200,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
 
         :raises: ``IOError`` -- if the path refers to a folder (directory)
         """
-        path = self._adjust_cwd(path)
-        self._log(DEBUG, "remove({!r})".format(path))
-        self._request(CMD_REMOVE, path)
-
+        pass
     unlink = remove
 
     def rename(self, oldpath, newpath):
@@ -417,10 +221,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
             ``IOError`` -- if ``newpath`` is a folder, or something else goes
             wrong
         """
-        oldpath = self._adjust_cwd(oldpath)
-        newpath = self._adjust_cwd(newpath)
-        self._log(DEBUG, "rename({!r}, {!r})".format(oldpath, newpath))
-        self._request(CMD_RENAME, oldpath, newpath)
+        pass
 
     def posix_rename(self, oldpath, newpath):
         """
@@ -437,12 +238,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
 
         :versionadded: 2.2
         """
-        oldpath = self._adjust_cwd(oldpath)
-        newpath = self._adjust_cwd(newpath)
-        self._log(DEBUG, "posix_rename({!r}, {!r})".format(oldpath, newpath))
-        self._request(
-            CMD_EXTENDED, "posix-rename@openssh.com", oldpath, newpath
-        )
+        pass
 
     def mkdir(self, path, mode=o777):
         """
@@ -453,11 +249,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
         :param str path: name of the folder to create
         :param int mode: permissions (posix-style) for the newly-created folder
         """
-        path = self._adjust_cwd(path)
-        self._log(DEBUG, "mkdir({!r}, {!r})".format(path, mode))
-        attr = SFTPAttributes()
-        attr.st_mode = mode
-        self._request(CMD_MKDIR, path, attr)
+        pass
 
     def rmdir(self, path):
         """
@@ -465,9 +257,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
 
         :param str path: name of the folder to remove
         """
-        path = self._adjust_cwd(path)
-        self._log(DEBUG, "rmdir({!r})".format(path))
-        self._request(CMD_RMDIR, path)
+        pass
 
     def stat(self, path):
         """
@@ -488,12 +278,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
             an `.SFTPAttributes` object containing attributes about the given
             file
         """
-        path = self._adjust_cwd(path)
-        self._log(DEBUG, "stat({!r})".format(path))
-        t, msg = self._request(CMD_STAT, path)
-        if t != CMD_ATTRS:
-            raise SFTPError("Expected attributes")
-        return SFTPAttributes._from_msg(msg)
+        pass
 
     def lstat(self, path):
         """
@@ -506,12 +291,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
             an `.SFTPAttributes` object containing attributes about the given
             file
         """
-        path = self._adjust_cwd(path)
-        self._log(DEBUG, "lstat({!r})".format(path))
-        t, msg = self._request(CMD_LSTAT, path)
-        if t != CMD_ATTRS:
-            raise SFTPError("Expected attributes")
-        return SFTPAttributes._from_msg(msg)
+        pass
 
     def symlink(self, source, dest):
         """
@@ -520,10 +300,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
         :param str source: path of the original file
         :param str dest: path of the newly created symlink
         """
-        dest = self._adjust_cwd(dest)
-        self._log(DEBUG, "symlink({!r}, {!r})".format(source, dest))
-        source = b(source)
-        self._request(CMD_SYMLINK, source, dest)
+        pass
 
     def chmod(self, path, mode):
         """
@@ -534,11 +311,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
         :param str path: path of the file to change the permissions of
         :param int mode: new permissions
         """
-        path = self._adjust_cwd(path)
-        self._log(DEBUG, "chmod({!r}, {!r})".format(path, mode))
-        attr = SFTPAttributes()
-        attr.st_mode = mode
-        self._request(CMD_SETSTAT, path, attr)
+        pass
 
     def chown(self, path, uid, gid):
         """
@@ -551,11 +324,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
         :param int uid: new owner's uid
         :param int gid: new group id
         """
-        path = self._adjust_cwd(path)
-        self._log(DEBUG, "chown({!r}, {!r}, {!r})".format(path, uid, gid))
-        attr = SFTPAttributes()
-        attr.st_uid, attr.st_gid = uid, gid
-        self._request(CMD_SETSTAT, path, attr)
+        pass
 
     def utime(self, path, times):
         """
@@ -571,13 +340,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
             ``None`` or a tuple of (access time, modified time) in standard
             internet epoch time (seconds since 01 January 1970 GMT)
         """
-        path = self._adjust_cwd(path)
-        if times is None:
-            times = (time.time(), time.time())
-        self._log(DEBUG, "utime({!r}, {!r})".format(path, times))
-        attr = SFTPAttributes()
-        attr.st_atime, attr.st_mtime = times
-        self._request(CMD_SETSTAT, path, attr)
+        pass
 
     def truncate(self, path, size):
         """
@@ -588,11 +351,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
         :param str path: path of the file to modify
         :param int size: the new size of the file
         """
-        path = self._adjust_cwd(path)
-        self._log(DEBUG, "truncate({!r}, {!r})".format(path, size))
-        attr = SFTPAttributes()
-        attr.st_size = size
-        self._request(CMD_SETSTAT, path, attr)
+        pass
 
     def readlink(self, path):
         """
@@ -603,17 +362,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
         :param str path: path of the symbolic link file
         :return: target path, as a `str`
         """
-        path = self._adjust_cwd(path)
-        self._log(DEBUG, "readlink({!r})".format(path))
-        t, msg = self._request(CMD_READLINK, path)
-        if t != CMD_NAME:
-            raise SFTPError("Expected name response")
-        count = msg.get_int()
-        if count == 0:
-            return None
-        if count != 1:
-            raise SFTPError("Readlink returned {} results".format(count))
-        return _to_unicode(msg.get_string())
+        pass
 
     def normalize(self, path):
         """
@@ -627,15 +376,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
 
         :raises: ``IOError`` -- if the path can't be resolved on the server
         """
-        path = self._adjust_cwd(path)
-        self._log(DEBUG, "normalize({!r})".format(path))
-        t, msg = self._request(CMD_REALPATH, path)
-        if t != CMD_NAME:
-            raise SFTPError("Expected name response")
-        count = msg.get_int()
-        if count != 1:
-            raise SFTPError("Realpath returned {} results".format(count))
-        return msg.get_text()
+        pass
 
     def chdir(self, path=None):
         """
@@ -653,13 +394,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
 
         .. versionadded:: 1.4
         """
-        if path is None:
-            self._cwd = None
-            return
-        if not stat.S_ISDIR(self.stat(path).st_mode):
-            code = errno.ENOTDIR
-            raise SFTPError(code, "{}: {}".format(os.strerror(code), path))
-        self._cwd = b(self.normalize(path))
+        pass
 
     def getcwd(self):
         """
@@ -669,20 +404,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
 
         .. versionadded:: 1.4
         """
-        # TODO: make class initialize with self._cwd set to self.normalize('.')
-        return self._cwd and u(self._cwd)
-
-    def _transfer_with_callback(self, reader, writer, file_size, callback):
-        size = 0
-        while True:
-            data = reader.read(32768)
-            writer.write(data)
-            size += len(data)
-            if len(data) == 0:
-                break
-            if callback is not None:
-                callback(size, file_size)
-        return size
+        pass
 
     def putfo(self, fl, remotepath, file_size=0, callback=None, confirm=True):
         """
@@ -711,20 +433,7 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
 
         .. versionadded:: 1.10
         """
-        with self.file(remotepath, "wb") as fr:
-            fr.set_pipelined(True)
-            size = self._transfer_with_callback(
-                reader=fl, writer=fr, file_size=file_size, callback=callback
-            )
-        if confirm:
-            s = self.stat(remotepath)
-            if s.st_size != size:
-                raise IOError(
-                    "size mismatch in put!  {} != {}".format(s.st_size, size)
-                )
-        else:
-            s = SFTPAttributes()
-        return s
+        pass
 
     def put(self, localpath, remotepath, callback=None, confirm=True):
         """
@@ -754,18 +463,9 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
         .. versionchanged:: 1.7.7
             ``confirm`` param added.
         """
-        file_size = os.stat(localpath).st_size
-        with open(localpath, "rb") as fl:
-            return self.putfo(fl, remotepath, file_size, callback, confirm)
+        pass
 
-    def getfo(
-        self,
-        remotepath,
-        fl,
-        callback=None,
-        prefetch=True,
-        max_concurrent_prefetch_requests=None,
-    ):
+    def getfo(self, remotepath, fl, callback=None, prefetch=True, max_concurrent_prefetch_requests=None):
         """
         Copy a remote file (``remotepath``) from the SFTP server and write to
         an open file or file-like object, ``fl``.  Any exception raised by
@@ -792,22 +492,9 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
         .. versionchanged:: 3.3
             Added ``max_concurrent_prefetch_requests``.
         """
-        file_size = self.stat(remotepath).st_size
-        with self.open(remotepath, "rb") as fr:
-            if prefetch:
-                fr.prefetch(file_size, max_concurrent_prefetch_requests)
-            return self._transfer_with_callback(
-                reader=fr, writer=fl, file_size=file_size, callback=callback
-            )
+        pass
 
-    def get(
-        self,
-        remotepath,
-        localpath,
-        callback=None,
-        prefetch=True,
-        max_concurrent_prefetch_requests=None,
-    ):
+    def get(self, remotepath, localpath, callback=None, prefetch=True, max_concurrent_prefetch_requests=None):
         """
         Copy a remote file (``remotepath``) from the SFTP server to the local
         host as ``localpath``.  Any exception raised by operations will be
@@ -836,130 +523,23 @@ class SFTPClient(BaseSFTP, ClosingContextManager):
         .. versionchanged:: 3.3
             Added ``max_concurrent_prefetch_requests``.
         """
-        with open(localpath, "wb") as fl:
-            size = self.getfo(
-                remotepath,
-                fl,
-                callback,
-                prefetch,
-                max_concurrent_prefetch_requests,
-            )
-        s = os.stat(localpath)
-        if s.st_size != size:
-            raise IOError(
-                "size mismatch in get!  {} != {}".format(s.st_size, size)
-            )
-
-    # ...internals...
-
-    def _request(self, t, *args):
-        num = self._async_request(type(None), t, *args)
-        return self._read_response(num)
-
-    def _async_request(self, fileobj, t, *args):
-        # this method may be called from other threads (prefetch)
-        self._lock.acquire()
-        try:
-            msg = Message()
-            msg.add_int(self.request_number)
-            for item in args:
-                if isinstance(item, int64):
-                    msg.add_int64(item)
-                elif isinstance(item, int):
-                    msg.add_int(item)
-                elif isinstance(item, SFTPAttributes):
-                    item._pack(msg)
-                else:
-                    # For all other types, rely on as_string() to either coerce
-                    # to bytes before writing or raise a suitable exception.
-                    msg.add_string(item)
-            num = self.request_number
-            self._expecting[num] = fileobj
-            self.request_number += 1
-        finally:
-            self._lock.release()
-        self._send_packet(t, msg)
-        return num
-
-    def _read_response(self, waitfor=None):
-        while True:
-            try:
-                t, data = self._read_packet()
-            except EOFError as e:
-                raise SSHException("Server connection dropped: {}".format(e))
-            msg = Message(data)
-            num = msg.get_int()
-            self._lock.acquire()
-            try:
-                if num not in self._expecting:
-                    # might be response for a file that was closed before
-                    # responses came back
-                    self._log(DEBUG, "Unexpected response #{}".format(num))
-                    if waitfor is None:
-                        # just doing a single check
-                        break
-                    continue
-                fileobj = self._expecting[num]
-                del self._expecting[num]
-            finally:
-                self._lock.release()
-            if num == waitfor:
-                # synchronous
-                if t == CMD_STATUS:
-                    self._convert_status(msg)
-                return t, msg
-
-            # can not rewrite this to deal with E721, either as a None check
-            # nor as not an instance of None or NoneType
-            if fileobj is not type(None):  # noqa
-                fileobj._async_response(t, msg, num)
-            if waitfor is None:
-                # just doing a single check
-                break
-        return None, None
-
-    def _finish_responses(self, fileobj):
-        while fileobj in self._expecting.values():
-            self._read_response()
-            fileobj._check_exception()
+        pass
 
     def _convert_status(self, msg):
         """
         Raises EOFError or IOError on error status; otherwise does nothing.
         """
-        code = msg.get_int()
-        text = msg.get_text()
-        if code == SFTP_OK:
-            return
-        elif code == SFTP_EOF:
-            raise EOFError(text)
-        elif code == SFTP_NO_SUCH_FILE:
-            # clever idea from john a. meinel: map the error codes to errno
-            raise IOError(errno.ENOENT, text)
-        elif code == SFTP_PERMISSION_DENIED:
-            raise IOError(errno.EACCES, text)
-        else:
-            raise IOError(text)
+        pass
 
     def _adjust_cwd(self, path):
         """
         Return an adjusted path if we're emulating a "current working
         directory" for the server.
         """
-        path = b(path)
-        if self._cwd is None:
-            return path
-        if len(path) and path[0:1] == b_slash:
-            # absolute path
-            return path
-        if self._cwd == b_slash:
-            return self._cwd + path
-        return self._cwd + b_slash + path
-
+        pass
 
 class SFTP(SFTPClient):
     """
     An alias for `.SFTPClient` for backwards compatibility.
     """
-
     pass
