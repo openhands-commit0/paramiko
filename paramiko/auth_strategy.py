@@ -147,7 +147,7 @@ class AuthResult(list):
         super().__init__(*args, **kwargs)
 
     def __str__(self):
-        return '\n'.join((f'{x.source} -> {x.result or 'success'}' for x in self))
+        return '\n'.join((f"{x.source} -> {x.result or 'success'}" for x in self))
 
 class AuthFailure(AuthenticationException):
     """
