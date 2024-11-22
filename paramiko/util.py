@@ -105,3 +105,15 @@ def u(s, encoding='utf8'):
 def clamp_value(minimum, val, maximum):
     """Clamp a value between minimum and maximum values."""
     return max(minimum, min(val, maximum))
+
+def get_logger(name):
+    """Get a logger with the specified name.
+
+    This logger is configured to output messages in a format suitable for paramiko.
+    """
+    logger = logging.getLogger(name)
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter('%(levelname)s:%(name)s:%(message)s'))
+        logger.addHandler(handler)
+    return logger
