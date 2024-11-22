@@ -101,3 +101,7 @@ def b(s, encoding='utf8'):
 def u(s, encoding='utf8'):
     """cast bytes or unicode to unicode"""
     pass
+
+def clamp_value(minimum, val, maximum):
+    """Clamp a value between minimum and maximum values."""
+    return max(minimum, min(val, maximum))
