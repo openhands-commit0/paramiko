@@ -3,6 +3,16 @@ Common constants and global variables.
 """
 import logging
 import struct
+
+def byte_chr(n):
+    """Convert an integer to a single byte character."""
+    return bytes([n])
+
+def byte_ord(c):
+    """Convert a single byte character to an integer."""
+    if isinstance(c, int):
+        return c
+    return ord(c)
 MSG_DISCONNECT, MSG_IGNORE, MSG_UNIMPLEMENTED, MSG_DEBUG, MSG_SERVICE_REQUEST, MSG_SERVICE_ACCEPT, MSG_EXT_INFO = range(1, 8)
 MSG_KEXINIT, MSG_NEWKEYS = range(20, 22)
 MSG_USERAUTH_REQUEST, MSG_USERAUTH_FAILURE, MSG_USERAUTH_SUCCESS, MSG_USERAUTH_BANNER = range(50, 54)
