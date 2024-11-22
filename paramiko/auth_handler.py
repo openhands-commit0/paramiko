@@ -58,6 +58,72 @@ class GssapiWithMicAuthHandler:
     def __init__(self, delegate, sshgss):
         self._delegate = delegate
         self.sshgss = sshgss
+
+    def _parse_service_request(self, m):
+        """Parse incoming service request."""
+        service = m.get_text()
+        if self._delegate.transport.server_mode and service == 'ssh-userauth':
+            # Accept service request
+            m = Message()
+            m.add_byte(cMSG_SERVICE_ACCEPT)
+            m.add_string('ssh-userauth')
+            self._delegate.transport._send_message(m)
+            return
+        self._delegate.transport._disconnect_reason = DISCONNECT_SERVICE_NOT_AVAILABLE
+        raise SSHException('Service request "{}" not supported'.format(service))
+
+    def _parse_userauth_request(self, m):
+        """Parse incoming userauth request."""
+        username = m.get_text()
+        service = m.get_text()
+        method = m.get_text()
+        if method != 'gssapi-with-mic':
+            return self._delegate._parse_userauth_request(m)
+        self._delegate.auth_username = username
+        self._delegate.transport.gss_kex_used = True
+        self._delegate.transport._expected_packet = (MSG_USERAUTH_GSSAPI_TOKEN,)
+        try:
+            self.sshgss.ssh_init_sec_context()
+            token = self.sshgss.ssh_get_mic(self._delegate.transport.session_id)
+            m = Message()
+            m.add_byte(cMSG_USERAUTH_GSSAPI_RESPONSE)
+            m.add_string(token)
+            self._delegate.transport._send_message(m)
+        except GSS_EXCEPTIONS as e:
+            self._delegate.transport.saved_exception = e
+            raise
+
+    def _parse_userauth_gssapi_token(self, m):
+        """Parse incoming GSSAPI token."""
+        try:
+            token = m.get_string()
+            self.sshgss.ssh_init_sec_context(token)
+            token = self.sshgss.ssh_get_mic(self._delegate.transport.session_id)
+            m = Message()
+            m.add_byte(cMSG_USERAUTH_GSSAPI_TOKEN)
+            m.add_string(token)
+            self._delegate.transport._send_message(m)
+        except GSS_EXCEPTIONS as e:
+            self._delegate.transport.saved_exception = e
+            raise
+
+    def _parse_userauth_gssapi_mic(self, m):
+        """Parse incoming GSSAPI MIC."""
+        mic_token = m.get_string()
+        if self.sshgss.ssh_check_mic(self._delegate.transport.session_id, mic_token):
+            m = Message()
+            m.add_byte(cMSG_USERAUTH_SUCCESS)
+            self._delegate.transport._send_message(m)
+            self._delegate.transport._auth_handler = self._delegate
+            self._delegate.transport.auth_handler = self._delegate
+            self._delegate.transport._expected_packet = tuple(self._delegate.transport._preferred_packets)
+            self._delegate.transport.authenticated = True
+            self._delegate.transport._log(INFO, 'Authentication successful.')
+            self._delegate.transport.auth_event.set()
+            self._delegate.transport.auth_event = None
+        else:
+            raise SSHException('GSSAPI MIC check failed')
+
     __handler_table = {MSG_SERVICE_REQUEST: _parse_service_request, MSG_USERAUTH_REQUEST: _parse_userauth_request, MSG_USERAUTH_GSSAPI_TOKEN: _parse_userauth_gssapi_token, MSG_USERAUTH_GSSAPI_MIC: _parse_userauth_gssapi_mic}
 
 class AuthOnlyHandler(AuthHandler):
