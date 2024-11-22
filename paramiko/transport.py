@@ -40,6 +40,12 @@ try:
 except ImportError:
     from cryptography.hazmat.primitives.ciphers.algorithms import TripleDES
 _active_threads = []
+
+def _join_lingering_threads():
+    """Join any lingering threads when the interpreter exits."""
+    for thr in _active_threads:
+        thr.join()
+
 import atexit
 atexit.register(_join_lingering_threads)
 
