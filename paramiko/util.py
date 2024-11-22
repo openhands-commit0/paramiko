@@ -135,3 +135,21 @@ def constant_time_bytes_eq(a, b):
     for x, y in zip(a, b):
         result |= x ^ y
     return result == 0
+
+def safe_string(s):
+    """Convert a potentially unsafe string to a safe one by escaping non-printable bytes.
+
+    :param bytes s: The string to make safe
+    :return: A safe version of the string with non-printable bytes escaped
+    """
+    out = []
+    for c in s:
+        if isinstance(c, int):
+            val = c
+        else:
+            val = ord(c)
+        if (val >= 32) and (val <= 127):
+            out.append(chr(val))
+        else:
+            out.append('%{:02x}'.format(val))
+    return ''.join(out).encode('ascii')
