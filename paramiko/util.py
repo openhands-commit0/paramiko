@@ -117,3 +117,21 @@ def get_logger(name):
         handler.setFormatter(logging.Formatter('%(levelname)s:%(name)s:%(message)s'))
         logger.addHandler(handler)
     return logger
+
+def constant_time_bytes_eq(a, b):
+    """Compare two byte strings in constant time.
+
+    This function is intended to prevent timing attacks by ensuring that
+    the comparison of two byte strings takes the same amount of time
+    regardless of how many characters are the same between the two strings.
+
+    :param bytes a: first byte string
+    :param bytes b: second byte string
+    :return: True if the strings are equal, False otherwise
+    """
+    if len(a) != len(b):
+        return False
+    result = 0
+    for x, y in zip(a, b):
+        result |= x ^ y
+    return result == 0
