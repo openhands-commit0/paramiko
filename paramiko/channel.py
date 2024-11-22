@@ -378,6 +378,47 @@ class Channel(ClosingContextManager):
         """
         pass
 
+    def _request_success(self, m):
+        """Handle a success response from the remote server."""
+        self.event.set()
+        self.event_ready = True
+
+    def _request_failed(self, m):
+        """Handle a failure response from the remote server."""
+        self.event.set()
+        self.event_ready = False
+
+    def _feed(self, m):
+        """Feed data from the remote server into our buffer."""
+        data = m.get_binary()
+        self.in_buffer.feed(data)
+
+    def _feed_extended(self, m):
+        """Feed extended data from the remote server into our buffer."""
+        code = m.get_int()
+        data = m.get_binary()
+        if code != 1:
+            return
+        self.in_stderr_buffer.feed(data)
+
+    def _window_adjust(self, m):
+        """Handle a window adjustment from the remote server."""
+        nbytes = m.get_int()
+        self.out_window_size += nbytes
+        self.out_buffer_cv.notify()
+
+    def _handle_request(self, m):
+        """Handle a channel request from the remote server."""
+        pass
+
+    def _handle_eof(self, m):
+        """Handle an EOF from the remote server."""
+        self.eof_received = True
+
+    def _handle_close(self, m):
+        """Handle a close request from the remote server."""
+        self.close()
+
     def get_id(self):
         """
         Return the `int` ID # for this channel.
