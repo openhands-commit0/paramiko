@@ -25,6 +25,15 @@ except ImportError:
     from cryptography.hazmat.primitives.ciphers.algorithms import TripleDES
 OPENSSH_AUTH_MAGIC = b'openssh-key-v1\x00'
 
+def _unpad_openssh(data):
+    """
+    Remove padding from OpenSSH private key data.
+    """
+    padding_length = data[-1]
+    if not all(c == padding_length for c in data[-padding_length:]):
+        raise SSHException("Invalid key padding")
+    return data[:-padding_length]
+
 class UnknownKeyType(Exception):
     """
     An unknown public/private key algorithm was attempted to be read.
